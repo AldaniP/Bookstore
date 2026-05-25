@@ -8,6 +8,10 @@ import Loading from "../../../components/Loading";
 import Swal from "sweetalert2";
 import axios from "axios";
 import getBaseUrl from "../../../utils/baseURL";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../firebase/firebase.config";
+import { useState } from "react";
+import { resizeImage } from "../../../utils/resizeImage";
 
 const UpdateBook = () => {
   const { id } = useParams();
@@ -19,6 +23,8 @@ const UpdateBook = () => {
   } = useFetchBookByIdQuery(id);
 
   const { register, handleSubmit, setValue } = useForm<UpdateBookFormData>();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   useEffect(() => {
     if (bookData) {
       setValue("title", bookData.title);
@@ -52,6 +58,24 @@ const UpdateBook = () => {
   }
 
   const onSubmit = async (data: UpdateBookFormData) => {
+    let downloadURL = data.coverImage || bookData.coverImage;
+
+    if (imageFile) {
+      setIsUploading(true);
+      try {
+        // Resize new image to 300x450 (standard book aspect ratio) before upload
+        const resizedImage = await resizeImage(imageFile, 300, 450);
+        const storageRef = ref(storage, `books/${resizedImage.name}`);
+        await uploadBytes(storageRef, resizedImage);
+        downloadURL = await getDownloadURL(storageRef);
+      } catch (error) {
+        console.error("Firebase upload error", error);
+        alert("Failed to upload image. Please check your Firebase Storage rules.");
+        setIsUploading(false);
+        return;
+      }
+    }
+
     const updateBookData: UpdateBookPayload = {
       title: data.title,
       description: data.description,
@@ -59,7 +83,7 @@ const UpdateBook = () => {
       trending: data.trending,
       oldPrice: Number(data.oldPrice),
       newPrice: Number(data.newPrice),
-      coverImage: data.coverImage || bookData.coverImage,
+      coverImage: downloadURL,
     };
     try {
       await axios.put(`${getBaseUrl()}/api/books/edit/${id}`, updateBookData, {
@@ -77,10 +101,19 @@ const UpdateBook = () => {
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, It's Okay!",
       });
+      setIsUploading(false);
       await refetch();
     } catch {
       console.log("Failed to update book.");
       alert("Failed to update book.");
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
     }
   };
   if (isLoading) return <Loading />;
@@ -147,19 +180,30 @@ const UpdateBook = () => {
           register={register}
         />
 
-        <InputField
-          label="Cover Image URL"
-          name="coverImage"
-          type="text"
-          placeholder="Cover Image URL"
-          register={register}
-        />
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Cover Image (Upload Baru Opsional)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="mb-2 w-full"
+          />
+          {imageFile && (
+            <p className="text-sm text-gray-500">New Image Selected: {imageFile.name}</p>
+          )}
+          {!imageFile && bookData?.coverImage && (
+            <p className="text-sm text-gray-500">Current Image: {bookData.coverImage}</p>
+          )}
+        </div>
 
         <button
           type="submit"
           className="w-full py-2 bg-blue-500 text-white font-bold rounded-md"
+          disabled={isUploading}
         >
-          Update Book
+          {isUploading ? "Uploading Image..." : "Update Book"}
         </button>
       </form>
     </div>

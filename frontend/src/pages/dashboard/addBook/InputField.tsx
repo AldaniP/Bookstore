@@ -22,6 +22,7 @@ const InputField = ({
       </label>
       <input
         type={type}
+        step={type === "number" ? "any" : undefined}
         {...register(name, { required: true })}
         className=" p-2 border w-full rounded-md focus:outline-none focus:ring focus:border-blue-300"
         placeholder={placeholder}

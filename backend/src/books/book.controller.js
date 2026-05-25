@@ -2,7 +2,7 @@ const Book = require("./book.model");
 
 const postABook = async (req, res) => {
     try {
-        const newBook = await Book({...req.body});
+        const newBook = new Book({...req.body});
         await newBook.save();
         res.status(200).send({message: "Book posted successfully", book: newBook})
     } catch (error) {
@@ -27,7 +27,7 @@ const getSingleBook = async (req, res) => {
         const {id} = req.params;
         const book =  await Book.findById(id);
         if(!book){
-            res.status(404).send({message: "Book not Found!"})
+            return res.status(404).send({message: "Book not Found!"})
         }
         res.status(200).send(book)
         
@@ -43,7 +43,7 @@ const UpdateBook = async (req, res) => {
         const {id} = req.params;
         const updatedBook =  await Book.findByIdAndUpdate(id, req.body, {new: true});
         if(!updatedBook) {
-            res.status(404).send({message: "Book is not Found!"})
+            return res.status(404).send({message: "Book is not Found!"})
         }
         res.status(200).send({
             message: "Book updated successfully",
@@ -60,7 +60,7 @@ const deleteABook = async (req, res) => {
         const {id} = req.params;
         const deletedBook =  await Book.findByIdAndDelete(id);
         if(!deletedBook) {
-            res.status(404).send({message: "Book is not Found!"})
+            return res.status(404).send({message: "Book is not Found!"})
         }
         res.status(200).send({
             message: "Book deleted successfully",

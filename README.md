@@ -48,6 +48,59 @@ A full-stack bookstore application built with **React**, **Redux Toolkit**, **Ex
 - **dotenv** (environment variable management)
 - **CORS** (secure API communication)
 
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** & **npm** installed.
+- **pnpm** installed (for frontend).
+- **MongoDB** account (Atlas or local).
+- **Firebase** account (for image storage).
+
+### Installation & Setup
+
+#### 1. Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Configure environment variables:
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Open `.env` and fill in your MongoDB credentials and JWT secret.
+4. Start the backend server:
+   ```bash
+   npm run dev
+   ```
+
+#### 2. Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies using pnpm:
+   ```bash
+   pnpm install
+   ```
+3. Configure environment variables:
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Open `.env` and fill in your Firebase credentials.
+4. Start the frontend development server:
+   ```bash
+   pnpm run dev
+   ```
+
+The application should now be running. The frontend is typically accessible at `http://localhost:5173`.
+
 ## What I Learned
 
 Developing **MERN Bookstore** helped me enhance my skills in:

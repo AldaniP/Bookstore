@@ -3,6 +3,9 @@ import {
   useFetchAllBooksQuery,
 } from "../../../redux/features/books/booksApi";
 import { Link } from "react-router";
+import { ref, deleteObject } from "firebase/storage";
+import { storage } from "../../../firebase/firebase.config";
+
 
 const ManageBooks = () => {
   const { data: books, refetch } = useFetchAllBooksQuery({});
@@ -14,28 +17,40 @@ const ManageBooks = () => {
     title: string;
     category: string;
     newPrice: number;
+    coverImage?: string;
   }
 
-  interface DeleteBookError {
-    message: string;
-  }
-
-  const handleDeleteBook = async (id: string): Promise<void> => {
+  const handleDeleteBook = async (id: string, coverImage?: string): Promise<void> => {
     try {
       await deleteBook(id).unwrap();
+
+      // Delete cover image from Firebase Storage if it's a Firebase URL
+      if (coverImage && coverImage.includes("firebasestorage.googleapis.com")) {
+        try {
+          const imgRef = ref(storage, coverImage);
+          await deleteObject(imgRef);
+          console.log("Firebase cover image deleted successfully!");
+        } catch (firebaseErr) {
+          console.error("Failed to delete cover image from Firebase Storage:", firebaseErr);
+        }
+      }
+
       alert("Book deleted successfully!");
       refetch();
-    } catch (error: unknown) {
-      const err = error as DeleteBookError;
-      console.error("Failed to delete book:", err.message);
-      alert("Failed to delete book. Please try again.");
+    } catch (error: any) {
+      console.error("Failed to delete book:", error);
+      const errorMessage = error?.data?.message || error?.message || "Please try again.";
+      alert(`Failed to delete book: ${errorMessage}`);
     }
   };
+
 
   return (
     <section className="py-1 bg-blueGray-50">
       <div className="w-full xl:w-8/12 mb-12 xl:mb-0 px-4 mx-auto mt-24">
-        <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded ">
+        
+
+        <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded mt-6">
           <div className="rounded-t mb-0 px-4 py-3 border-0">
             <div className="flex flex-wrap items-center">
               <div className="relative w-full px-4 max-w-full flex-grow flex-1">
@@ -100,7 +115,7 @@ const ManageBooks = () => {
                           Edit
                         </Link>
                         <button
-                          onClick={() => handleDeleteBook(book._id)}
+                          onClick={() => handleDeleteBook(book._id, book.coverImage)}
                           className="font-medium bg-red-500 py-1 px-4 rounded-full text-white mr-2"
                         >
                           Delete

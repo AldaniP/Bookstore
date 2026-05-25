@@ -2,6 +2,8 @@ import { useState } from "react";
 import InputField from "./InputField";
 import SelectField from "./SelectField";
 import { useForm } from "react-hook-form";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../firebase/firebase.config";
 
 interface FormData {
   title: string;
@@ -13,15 +15,40 @@ interface FormData {
 }
 import { useAddBookMutation } from "../../../redux/features/books/booksApi";
 import Swal from "sweetalert2";
+import { resizeImage } from "../../../utils/resizeImage";
 
 const AddBook = () => {
   const { register, handleSubmit, reset } = useForm<FormData>();
-  const [addBook, isLoading] = useAddBookMutation();
-  const [imageFileName, setimageFileName] = useState("");
+  const [addBook, { isLoading }] = useAddBookMutation();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const onSubmit = async (data: FormData) => {
+    if (!imageFile) {
+      alert("Please select a cover image");
+      return;
+    }
+
+    setIsUploading(true);
+    let downloadURL = "";
+    try {
+      // Resize image to 300x450 (standard book aspect ratio) before upload
+      const resizedImage = await resizeImage(imageFile, 300, 450);
+      const storageRef = ref(storage, `books/${resizedImage.name}`);
+      await uploadBytes(storageRef, resizedImage);
+      downloadURL = await getDownloadURL(storageRef);
+    } catch (error) {
+      console.error("Firebase upload error", error);
+      alert("Failed to upload image. Please check your Firebase Storage rules.");
+      setIsUploading(false);
+      return;
+    }
+
     const newBookData = {
       ...data,
-      coverImage: imageFileName,
+      oldPrice: Number(data.oldPrice),
+      newPrice: Number(data.newPrice),
+      coverImage: downloadURL,
     };
     try {
       await addBook(newBookData).unwrap();
@@ -35,17 +62,19 @@ const AddBook = () => {
         confirmButtonText: "Yes, It's Okay!",
       });
       reset();
-      setimageFileName("");
+      setImageFile(null);
+      setIsUploading(false);
     } catch (error) {
       console.error(error);
       alert("Failed to add book. Please try again.");
+      setIsUploading(false);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setimageFileName(file.name);
+      setImageFile(file);
     }
   };
   return (
@@ -129,8 +158,8 @@ const AddBook = () => {
             onChange={handleFileChange}
             className="mb-2 w-full"
           />
-          {imageFileName && (
-            <p className="text-sm text-gray-500">Selected: {imageFileName}</p>
+          {imageFile && (
+            <p className="text-sm text-gray-500">Selected: {imageFile.name}</p>
           )}
         </div>
 
@@ -138,9 +167,10 @@ const AddBook = () => {
         <button
           type="submit"
           className="w-full py-2 bg-green-500 text-white font-bold rounded-md"
+          disabled={isLoading || isUploading}
         >
-          {isLoading ? (
-            <span className="">Adding.. </span>
+          {isLoading || isUploading ? (
+            <span className="">{isUploading ? "Uploading Image..." : "Adding..."}</span>
           ) : (
             <span>Add Book</span>
           )}

@@ -10,7 +10,7 @@ require('dotenv').config()
 
 app.use(express.json());
 app.use(cors({
-    origin: ['http://localhost:5173', '[::1]:5173'], // You can (and you need to) add your vercel/heroku URL here
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ['http://localhost:5173', '[::1]:5173'],
     credentials: true
 }))
 
