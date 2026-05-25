@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "lint": "echo \"No backend linting specified\" && exit 0",
+    "test": "echo \"No backend tests specified\" && exit 0"
   },
   "keywords": [],
   "author": "Abdullah Koyuncu",

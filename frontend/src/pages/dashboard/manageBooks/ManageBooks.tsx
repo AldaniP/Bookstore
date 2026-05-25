@@ -37,9 +37,10 @@ const ManageBooks = () => {
 
       alert("Book deleted successfully!");
       refetch();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to delete book:", error);
-      const errorMessage = error?.data?.message || error?.message || "Please try again.";
+      const err = error as { data?: { message?: string }; message?: string };
+      const errorMessage = err?.data?.message || err?.message || "Please try again.";
       alert(`Failed to delete book: ${errorMessage}`);
     }
   };

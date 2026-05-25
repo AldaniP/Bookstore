@@ -1,0 +1,136 @@
+name: CI/CD Pipeline to GCP
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # GCP Project ID
+  GAR_LOCATION: ${{ secrets.GAR_LOCATION }} # e.g. us-central1, asia-southeast1
+  GAR_REPOSITORY: ${{ secrets.GAR_REPOSITORY }} # repository name (e.g. bookstore)
+  FRONTEND_IMAGE: bookstore-frontend
+  BACKEND_IMAGE: bookstore-backend
+
+jobs:
+  lint-and-test:
+    name: Lint & Test Applications
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: |
+            frontend/pnpm-lock.yaml
+            backend/pnpm-lock.yaml
+
+      # --- Frontend ---
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint Frontend
+        working-directory: frontend
+        run: pnpm run lint
+
+      - name: Run Frontend Tests
+        working-directory: frontend
+        run: pnpm run test
+
+      - name: Compile/Build Frontend (Typecheck Check)
+        working-directory: frontend
+        run: pnpm run build
+
+      # --- Backend ---
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint Backend
+        working-directory: backend
+        run: pnpm run lint
+
+      - name: Run Backend Tests
+        working-directory: backend
+        run: pnpm run test
+
+  build-and-push:
+    name: Build & Push Docker Images to GAR
+    needs: lint-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for Workload Identity Federation
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --- Google Cloud Auth ---
+      # Option 1: Workload Identity Federation (RECOMMENDED)
+      # Uncomment the step below and configure secrets if using WIF.
+      # - name: Authenticate to Google Cloud (Workload Identity)
+      #   id: auth-wif
+      #   uses: google-github-actions/auth@v2
+      #   with:
+      #     workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      #     service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      # Option 2: Service Account Key (LEGACY FALLBACK)
+      # Uses the JSON key stored in secrets.GCP_SA_KEY
+      - name: Authenticate to Google Cloud (Service Account Key)
+        id: auth-sa
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # Set up GCloud CLI
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # Authenticate Docker to GCP Artifact Registry
+      - name: Docker Auth to GAR
+        run: |
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
+
+      # Set up Docker Buildx for optimization
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # --- Build & Push Frontend ---
+      - name: Build & Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # --- Build & Push Backend ---
+      - name: Build & Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
