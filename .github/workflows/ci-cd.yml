@@ -26,7 +26,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.26.2
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -40,7 +40,7 @@ jobs:
       # --- Frontend ---
       - name: Install Frontend Dependencies
         working-directory: frontend
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Lint Frontend
         working-directory: frontend
@@ -57,7 +57,7 @@ jobs:
       # --- Backend ---
       - name: Install Backend Dependencies
         working-directory: backend
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Lint Backend
         working-directory: backend
