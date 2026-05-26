@@ -9,10 +9,28 @@ const port = process.env.PORT || 5000;
 require('dotenv').config()
 
 app.use(express.json());
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(",") 
+    : ['http://localhost:5173', 'http://localhost:5000', '[::1]:5173'];
+
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ['http://localhost:5173', '[::1]:5173'],
+    origin: (origin, callback) => {
+        // Izinkan request tanpa origin (seperti aplikasi mobile, curl, dll)
+        if (!origin) return callback(null, true);
+        
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1 || 
+                          allowedOrigins.includes('*') ||
+                          origin.endsWith('.run.app'); // Secara otomatis izinkan semua domain Cloud Run (.run.app)
+                          
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(new Error('Blocked by CORS'));
+        }
+    },
     credentials: true
-}))
+}));
 
 const bookRoutes = require('./src/books/book.route');
 const orderRoutes = require("./src/orders/order.route")
