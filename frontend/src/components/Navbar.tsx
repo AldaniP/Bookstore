@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   HiMiniBars3CenterLeft,
   HiOutlineHeart,
@@ -21,6 +21,10 @@ const navigation = [
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const navigate = useNavigate();
+
   interface CartItem {
     id: string;
     name: string;
@@ -39,6 +43,16 @@ const Navbar = () => {
   };
 
   const token = localStorage.getItem("token");
+  const handleSearch = () => {
+  if (!searchTerm.trim()) return;
+
+  navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+  };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter") {
+    handleSearch();
+  }
+};
 
   return (
     <header className="max-w-screen-2xl mx-auto px-4 py-6">
@@ -56,6 +70,9 @@ const Navbar = () => {
             <input
               type="text"
               placeholder="Search here"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="bg-[#EAEAEA] w-full py-1 md:px-8 px-6 rounded-md focus:outline-none"
             />
           </div>

@@ -1,4 +1,5 @@
 import footerLogo from "../assets/footer-logo.png";
+import { Link } from "react-router";
 
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 
@@ -12,24 +13,24 @@ const Footer = () => {
           <img src={footerLogo} alt="Logo" className="mb-5 w-36" />
           <ul className="flex flex-col md:flex-row gap-4">
             <li>
-              <a href="#home" className="hover:text-primary">
+              <Link to="/" className="hover:text-primary">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#services" className="hover:text-primary">
+              <Link to="/services" className="hover:text-primary">
                 Services
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#about" className="hover:text-primary">
+              <Link to="/about" className="hover:text-primary">
                 About Us
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#contact" className="hover:text-primary">
+              <Link to="/contact" className="hover:text-primary">
                 Contact
-              </a>
+              </Link>
             </li>
           </ul>
         </div>

@@ -13,6 +13,10 @@ import {
   UpdateBook,
   UserDashboard,
 } from "../pages/dashboard";
+import About from "../pages/About";
+import Services from "../pages/Services";
+import Contact from "../pages/Contact";
+import SearchPage from "../pages/SearchPage";
 
 const AppRouter = () => {
   return (
@@ -31,7 +35,10 @@ const AppRouter = () => {
                   </PrivateRoute>
                 }
               />
-              <Route path="/about" element={<div>About</div>} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/search" element={<SearchPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/cart" element={<CartPage />} />
