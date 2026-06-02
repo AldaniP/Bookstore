@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router";
-import { AdminLogin, Footer, Login, Navbar, Register } from "../components";
+import { AdminLogin, Footer, Login, Navbar, Register, } from "../components";
 import { AuthProvide } from "../context/AuthContext";
 import Home from "../pages/home/Home";
 import PrivateRoute from "./PrivateRouter";
@@ -17,11 +17,13 @@ import About from "../pages/About";
 import Services from "../pages/Services";
 import Contact from "../pages/Contact";
 import SearchPage from "../pages/SearchPage";
+import ScrollToTop from "../components/ScrollToTop";
 
 const AppRouter = () => {
   return (
     <>
       <BrowserRouter>
+        <ScrollToTop />
         <AuthProvide>
           <Navbar />
           <main className="min-h-screen max-w-screen-2xl mx-auto px-4 py-6 font-primary">
