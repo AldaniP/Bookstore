@@ -5,6 +5,8 @@ import { Link } from "react-router";
 
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
+import { useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 
 interface Book {
   _id: string;
@@ -18,7 +20,15 @@ interface Book {
 const BookCard = ({ book }: { book: Book }) => {
   const dispatch = useDispatch();
 
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+
   const handleAddToCart = (product: Book): void => {
+    if (!currentUser) {
+    navigate("/login");
+    return;
+    }
+    
     dispatch(addToCart(product));
   };
   return (

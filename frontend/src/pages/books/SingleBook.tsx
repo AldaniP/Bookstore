@@ -5,11 +5,15 @@ import { getImgUrl } from "../../utils/getImgUrl";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
 import { useFetchBookByIdQuery } from "../../redux/features/books/booksApi";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router";
 
 const SingleBook = () => {
   const { id } = useParams();
   const { data: book, isLoading, isError } = useFetchBookByIdQuery(id);
+  const { currentUser } = useAuth();
 
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   interface Book {
@@ -23,6 +27,11 @@ const SingleBook = () => {
   }
 
   const handleAddToCart = (product: Book) => {
+    if (!currentUser) {
+    navigate("/login");
+    return;
+    }
+
     dispatch(addToCart(product));
   };
 
