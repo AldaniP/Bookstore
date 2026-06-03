@@ -2,6 +2,14 @@ import { Link, useSearchParams } from "react-router";
 import { useFetchAllBooksQuery } from "../redux/features/books/booksApi";
 import { getImgUrl } from "../utils/getImgUrl";
 
+interface Book {
+  _id: string;
+  title: string;
+  author: string;
+  category: string;
+  coverImage: string;
+}
+
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
 
@@ -13,9 +21,9 @@ const SearchPage = () => {
     isError,
   } = useFetchAllBooksQuery(undefined);
 
-  const bookList = Array.isArray(books) ? books : [];
+  const bookList: Book[] = Array.isArray(books) ? books : [];
 
-  const filteredBooks = bookList.filter((book: any) =>
+  const filteredBooks = bookList.filter((book) =>
     book.title?.toLowerCase().includes(keyword.toLowerCase()) ||
     book.author?.toLowerCase().includes(keyword.toLowerCase()) ||
     book.category?.toLowerCase().includes(keyword.toLowerCase())
@@ -55,7 +63,7 @@ const SearchPage = () => {
         </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-6">
-          {filteredBooks.map((book: any) => (
+          {filteredBooks.map((book) => (
             <div
               key={book._id}
               className="border rounded-lg p-4 shadow-sm hover:shadow-md transition"

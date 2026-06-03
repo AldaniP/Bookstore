@@ -91,7 +91,7 @@ const CheckoutPage = () => {
           <div>
             <div>
               <h2 className="font-semibold text-xl text-gray-600 mb-2">
-                Cash On Delevary
+                Cash On Delivery
               </h2>
               <p className="text-gray-500 mb-2">Total Price: ${totalPrice}</p>
               <p className="text-gray-500 mb-6">
@@ -281,7 +281,7 @@ const CheckoutPage = () => {
                           className="form-checkbox"
                         />
                         <label htmlFor="billing_same" className="ml-2 ">
-                          I am aggree to the{" "}
+                          I agree to the{" "}
                           <Link
                             className="underline underline-offset-2 text-blue-600"
                             to={""}
@@ -293,7 +293,7 @@ const CheckoutPage = () => {
                             className="underline underline-offset-2 text-blue-600"
                             to={""}
                           >
-                            Shoping Policy.
+                            Shopping Policy.
                           </Link>
                         </label>
                       </div>
