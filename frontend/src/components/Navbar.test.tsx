@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import Navbar from "./Navbar";
@@ -39,6 +40,12 @@ describe("Navbar Component Unit Tests", () => {
   });
 
   it("displays correct number of cart items", () => {
+    // Mock active user so that cart page link is rendered instead of login redirect
+    (useAuth as jest.Mock).mockReturnValue({
+      currentUser: { email: "student@its.ac.id" },
+      logout: jest.fn(),
+    });
+
     // Mock cart containing 2 items
     (useSelector as unknown as jest.Mock).mockReturnValue([
       { id: "1", name: "Book A" },

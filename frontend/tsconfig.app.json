@@ -24,7 +24,8 @@
     "noPropertyAccessFromIndexSignature": true,
     "useUnknownInCatchVariables": true,
     "checkJs": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "types": ["jest", "node"]
   },
   "include": ["src"]
 }
