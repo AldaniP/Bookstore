@@ -45,7 +45,7 @@ jobs:
 
       - name: Run Frontend Security Audit
         working-directory: frontend
-        run: pnpm audit --audit-level=moderate
+        run: pnpm audit --audit-level=high
 
       - name: Lint Frontend
         working-directory: frontend
@@ -66,7 +66,7 @@ jobs:
 
       - name: Run Backend Security Audit
         working-directory: backend
-        run: pnpm audit --audit-level=moderate
+        run: pnpm audit --audit-level=high
 
       - name: Lint Backend
         working-directory: backend
