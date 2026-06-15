@@ -11,14 +11,16 @@ const CheckoutPage = () => {
   interface CartItem {
     _id: string;
     newPrice: number;
+    quantity: number;
   }
 
   const cartItems = useSelector(
     (state: { cart: { cartItems: CartItem[] } }) => state.cart.cartItems
   );
   const totalPrice = cartItems
-    .reduce((acc: number, item: { newPrice: number }) => acc + item.newPrice, 0)
+    .reduce((acc: number, item: CartItem) => acc + item.newPrice * item.quantity, 0)
     .toFixed(2);
+  const totalQuantity = cartItems.reduce((acc: number, item: CartItem) => acc + item.quantity, 0);
   const { currentUser } = useAuth();
   const { register, handleSubmit } = useForm<FormData>();
 
@@ -37,6 +39,7 @@ const CheckoutPage = () => {
     };
     phone: string;
     productIds: string[];
+    totalQuantity: number;
     totalPrice: string;
   }
 
@@ -62,6 +65,7 @@ const CheckoutPage = () => {
       },
       phone: data.phone,
       productIds: cartItems.map((item: { _id: string }) => item?._id),
+      totalQuantity,
       totalPrice: totalPrice,
     };
 
@@ -94,8 +98,11 @@ const CheckoutPage = () => {
                 Cash On Delivery
               </h2>
               <p className="text-gray-500 mb-2">Total Price: ${totalPrice}</p>
+              <p className="text-gray-500 mb-2">
+                Total Items: {totalQuantity}
+              </p>
               <p className="text-gray-500 mb-6">
-                Items: {cartItems.length > 0 ? cartItems.length : 0}
+                Products in cart: {cartItems.length > 0 ? cartItems.length : 0}
               </p>
             </div>
 

@@ -11,6 +11,7 @@ const UserDashboard = () => {
     email: string;
     phone: string;
     totalPrice: number;
+    totalQuantity: number;
     address: {
       city: string;
       state: string;
@@ -48,6 +49,7 @@ const UserDashboard = () => {
                 >
                   <p className="font-medium">Order ID: {order._id}</p>
                   <p>Date: {new Date(order?.createdAt).toLocaleDateString()}</p>
+                  <p>Total Items: {order.totalQuantity}</p>
                   <p>Total: ${order.totalPrice}</p>
                   {order.productIds.map((productId) => (
                     <p key={productId} className="ml-1">

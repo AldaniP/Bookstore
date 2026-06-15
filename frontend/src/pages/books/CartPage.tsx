@@ -1,7 +1,12 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
 import { getImgUrl } from "../../utils/getImgUrl";
-import { clearCart, removeFromCart } from "../../redux/features/cart/cartSlice";
+import {
+  clearCart,
+  removeFromCart,
+  incrementQuantity,
+  decrementQuantity,
+} from "../../redux/features/cart/cartSlice";
 
 const CartPage = () => {
   const cartItems: CartItem[] = useSelector(
@@ -15,10 +20,14 @@ const CartPage = () => {
     title: string;
     newPrice: number;
     category: string;
+    quantity: number;
   }
 
   const totalPrice: string = cartItems
-    .reduce((acc: number, item: CartItem) => acc + item.newPrice, 0)
+    .reduce(
+      (acc: number, item: CartItem) => acc + item.newPrice * item.quantity,
+      0
+    )
     .toFixed(2);
 
   const handleRemoveFromCart = (product: CartItem): void => {
@@ -28,6 +37,15 @@ const CartPage = () => {
   const handleClearCart = () => {
     dispatch(clearCart());
   };
+
+  const handleIncrement = (product: CartItem) => {
+    dispatch(incrementQuantity(product));
+  };
+
+  const handleDecrement = (product: CartItem) => {
+    dispatch(decrementQuantity(product));
+  };
+
   return (
     <>
       <div className="flex mt-12 h-full flex-col overflow-hidden bg-white shadow-xl">
@@ -75,11 +93,36 @@ const CartPage = () => {
                           </p>
                         </div>
                         <div className="flex flex-1 flex-wrap items-end justify-between space-y-2 text-sm">
-                          <p className="text-gray-500">
-                            <strong>Qty:</strong> 1
-                          </p>
-
-                          <div className="flex">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleDecrement(product)}
+                              disabled={product.quantity <= 1}
+                              className={`h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 transition-all ${
+                                product.quantity <= 1
+                                  ? "cursor-not-allowed opacity-50"
+                                  : "hover:bg-gray-100"
+                              }`}
+                            >
+                              -
+                            </button>
+                            <span className="text-gray-900 font-medium">
+                              {product.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleIncrement(product)}
+                              className="h-8 w-8 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+                            >
+                              +
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <p className="text-gray-500">
+                              <strong>Total:</strong> ${
+                                (product.newPrice * product.quantity).toFixed(2)
+                              }
+                            </p>
                             <button
                               onClick={() => handleRemoveFromCart(product)}
                               type="button"

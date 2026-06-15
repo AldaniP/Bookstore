@@ -25,7 +25,8 @@
     "useUnknownInCatchVariables": true,
     "checkJs": true,
     "verbatimModuleSyntax": true,
-    "types": ["jest", "node"]
+    "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.tsx", "src/**/*.test.ts", "src/setupTests.ts"]
 }
