@@ -21,6 +21,15 @@ jest.mock("./book.model", () => {
 
 describe("Book Controller Unit Tests", () => {
   let req, res;
+  let consoleSpy;
+
+  beforeAll(() => {
+    consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    consoleSpy.mockRestore();
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();

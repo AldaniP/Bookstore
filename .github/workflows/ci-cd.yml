@@ -111,6 +111,11 @@ jobs:
       - name: Run Backend Tests
         working-directory: backend
         run: pnpm run test
+        env:
+          NODE_ENV: test
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_URL_TEST: ${{ secrets.DB_URL_TEST }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
   build-and-push:
     name: Build & Push Docker Images to GAR
