@@ -2,22 +2,26 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
 const { app } = require('../../index'); 
 const Book = require('./book.model');
 
 describe('Book Integration Tests', () => {
     let adminToken;
+    const secret = process.env.JWT_SECRET_KEY || 'test-secret-key';
 
     beforeAll(async () => {
         // Ensure connection is established
         if (mongoose.connection.readyState === 0) {
-            await mongoose.connect(process.env.DB_URL_TEST);
+            const dbUrl = process.env.DB_URL_TEST || process.env.DB_URL;
+            if (!dbUrl) throw new Error('DB_URL_TEST is not defined');
+            await mongoose.connect(dbUrl);
         }
 
         // Generate a valid admin token for testing
         adminToken = jwt.sign(
             { id: 'test-admin-id', role: 'admin' },
-            process.env.JWT_SECRET_KEY,
+            secret,
             { expiresIn: '1h' }
         );
     });
