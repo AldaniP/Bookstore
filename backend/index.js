@@ -5,6 +5,8 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 
+const reviewRoutes = require("./src/reviews/review.route");
+
 require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
 });
@@ -47,6 +49,7 @@ app.use("/api/books", bookRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.use("/", (req, res) => {
   res.send("Book Store Server is running!");
