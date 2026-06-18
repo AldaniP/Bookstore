@@ -6,7 +6,7 @@ import getBaseUrl from "../utils/baseURL";
 import { useNavigate } from "react-router";
 
 const AdminLogin = () => {
-  const [message, setMessage] = useState("");
+  const [message] = useState(""); //, setMessage
   const { register, handleSubmit } = useForm<AdminLoginFormData>();
 
   const navigate = useNavigate();
