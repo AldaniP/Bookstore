@@ -68,7 +68,7 @@ const SingleBook = () => {
 
         <button
           onClick={() => handleAddToCart(book)}
-          className="btn-primary px-6 space-x-1 flex items-center gap-1 "
+          className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-md flex items-center gap-1 transition-all duration-200"
         >
           <FiShoppingCart className="" />
           <span>Add to Cart</span>

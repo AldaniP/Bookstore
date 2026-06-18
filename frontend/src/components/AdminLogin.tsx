@@ -43,10 +43,10 @@ const AdminLogin = () => {
 
       alert("Admin Login successful!");
       navigate("/dashboard");
-    } catch (error) {
-      setMessage("Please provide a valid email and password");
-      console.error(error);
-    }
+    } catch (error: any) {
+      console.log(error.response?.data);
+      setMessage(error.response?.data?.message || "Login failed");
+      }
   };
   return (
     <div className="h-screen flex justify-center items-center ">
