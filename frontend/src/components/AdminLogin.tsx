@@ -43,9 +43,10 @@ const AdminLogin = () => {
 
       alert("Admin Login successful!");
       navigate("/dashboard");
-    } catch (error: any) {
-      console.log(error.response?.data);
-      setMessage(error.response?.data?.message || "Login failed");
+    } catch (error) {
+      console.error(error)
+      // console.log(error.response?.data);
+      // setMessage(error.response?.data?.message || "Login failed");
       }
   };
   return (
