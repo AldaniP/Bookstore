@@ -87,7 +87,7 @@ const Navbar = () => {
                 <button onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                   <img
                     src={avatarImg}
-                    alt=""
+                    alt="User Avatar"
                     className={`size-7 rounded-full ${
                       currentUser ? "ring-2 ring-blue-500" : ""
                     }`}

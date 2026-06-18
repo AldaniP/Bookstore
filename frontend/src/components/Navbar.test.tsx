@@ -87,15 +87,16 @@ describe("Navbar Component Unit Tests", () => {
       logout: mockLogout,
     });
 
-    const { container } = render(
+    render(           //const { container } = 
       <MemoryRouter>
         <Navbar />
       </MemoryRouter>
     );
 
     // The user avatar image and its button should render
-    const avatarImg = container.querySelector("img");
-    const avatarButton = avatarImg?.closest("button");
+    const avatarImg = screen.getByAltText("User Avatar");
+    const avatarButton = avatarImg.closest("button");
+
     expect(avatarButton).toBeInTheDocument();
 
     // Click the avatar button to trigger dropdown visibility
