@@ -16,7 +16,7 @@
     "@grpc/grpc-js": "1.9.16",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.2.4",
-    "axios": "^1.16.0",
+    "axios": "^1.18.0",
     "chart.js": "^4.5.1",
     "firebase": "^12.14.0",
     "react": "^19.2.6",
