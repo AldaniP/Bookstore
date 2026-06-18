@@ -5,6 +5,23 @@ import Navbar from "./Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useSelector } from "react-redux";
 
+// Mock react-router
+jest.mock("react-router", () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Link: ({ children, to }: any) => <a href={to}>{children}</a>,
+  useNavigate: () => jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  MemoryRouter: ({ children }: any) => <div>{children}</div>,
+}));
+
+// Mock Firebase Config
+jest.mock("../firebase/firebase.config", () => ({
+  auth: {
+    currentUser: null,
+  },
+  storage: {},
+}));
+
 // Mock the Auth Context
 jest.mock("../context/AuthContext", () => ({
   useAuth: jest.fn(),
