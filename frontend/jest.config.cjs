@@ -10,5 +10,6 @@ module.exports = {
   },
   transformIgnorePatterns: [],
   setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
+  testPathIgnorePatterns: ["<rootDir>/e2e/"],
   injectGlobals: true
 };

@@ -422,3 +422,7 @@ dist/
 # End of https://www.toptal.com/developers/gitignore/api/react,visualstudio
 
 .DS_Store
+
+# Playwright E2E testing outputs
+playwright-report/
+test-results/
