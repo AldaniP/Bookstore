@@ -6,7 +6,7 @@ import getBaseUrl from "../utils/baseURL";
 import { useNavigate } from "react-router";
 
 const AdminLogin = () => {
-  const [message, setMessage] = useState("");
+  const [message] = useState(""); //, setMessage
   const { register, handleSubmit } = useForm<AdminLoginFormData>();
 
   const navigate = useNavigate();
@@ -44,9 +44,10 @@ const AdminLogin = () => {
       alert("Admin Login successful!");
       navigate("/dashboard");
     } catch (error) {
-      setMessage("Please provide a valid email and password");
-      console.error(error);
-    }
+      console.error(error)
+      // console.log(error.response?.data);
+      // setMessage(error.response?.data?.message || "Login failed");
+      }
   };
   return (
     <div className="h-screen flex justify-center items-center ">

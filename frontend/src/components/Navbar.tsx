@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router";
 import {
-  HiMiniBars3CenterLeft,
-  HiOutlineHeart,
+  // HiOutlineHeart,
   HiOutlineShoppingCart,
+  // HiHome,
 } from "react-icons/hi2";
 import { IoSearchOutline } from "react-icons/io5";
 import { HiOutlineUser } from "react-icons/hi";
@@ -55,12 +55,13 @@ const Navbar = () => {
 };
 
   return (
-    <header className="max-w-screen-2xl mx-auto px-4 py-6">
+    <header className="max-w-screen-2xl mx-auto px-4 py-6 bg-white shadow-lg">
       <nav className="flex justify-between items-center">
         {}
         <div className="flex items-center md:gap-16 gap-4">
-          <Link to="/">
-            <HiMiniBars3CenterLeft className="size-6" />
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/fav-icon.png" alt="BookStore" className="h-8 w-8" />
+            <span className="font-bold text-xl">BookStore</span>
           </Link>
 
           {}
@@ -86,7 +87,7 @@ const Navbar = () => {
                 <button onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                   <img
                     src={avatarImg}
-                    alt=""
+                    alt="User Avatar"
                     className={`size-7 rounded-full ${
                       currentUser ? "ring-2 ring-blue-500" : ""
                     }`}
@@ -132,10 +133,6 @@ const Navbar = () => {
               </Link>
             )}
           </div>
-
-          <button className="hidden sm:block">
-            <HiOutlineHeart className="size-6" />
-          </button>
 
           {currentUser ? (
             <Link

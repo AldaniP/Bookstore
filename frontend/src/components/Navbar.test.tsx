@@ -5,6 +5,23 @@ import Navbar from "./Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useSelector } from "react-redux";
 
+// Mock react-router
+jest.mock("react-router", () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Link: ({ children, to }: any) => <a href={to}>{children}</a>,
+  useNavigate: () => jest.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  MemoryRouter: ({ children }: any) => <div>{children}</div>,
+}));
+
+// Mock Firebase Config
+jest.mock("../firebase/firebase.config", () => ({
+  auth: {
+    currentUser: null,
+  },
+  storage: {},
+}));
+
 // Mock the Auth Context
 jest.mock("../context/AuthContext", () => ({
   useAuth: jest.fn(),
@@ -70,15 +87,16 @@ describe("Navbar Component Unit Tests", () => {
       logout: mockLogout,
     });
 
-    const { container } = render(
+    render(           //const { container } = 
       <MemoryRouter>
         <Navbar />
       </MemoryRouter>
     );
 
     // The user avatar image and its button should render
-    const avatarImg = container.querySelector("img");
-    const avatarButton = avatarImg?.closest("button");
+    const avatarImg = screen.getByAltText("User Avatar");
+    const avatarButton = avatarImg.closest("button");
+
     expect(avatarButton).toBeInTheDocument();
 
     // Click the avatar button to trigger dropdown visibility

@@ -11,13 +11,13 @@ const UserDashboard = () => {
     email: string;
     phone: string;
     totalPrice: number;
+    totalQuantity: number;
     address: {
       city: string;
       state: string;
       country: string;
       zipcode: string;
     };
-    productIds: string[];
   }
 
   const {
@@ -29,36 +29,136 @@ const UserDashboard = () => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error getting orders data</div>;
 
-  return (
-    <div className=" bg-gray-100 py-16">
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">User Dashboard</h1>
-        <p className="text-gray-700 mb-6">
-          Welcome, {currentUser?.email ?? "User"}! Here are your recent orders:
-        </p>
+  const totalOrders = orders.length;
 
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-4">Your Orders</h2>
+  const totalBooks = orders.reduce(
+    (sum: number, order: Order) => sum + order.totalQuantity,
+    0
+  );
+
+  const totalSpent = orders.reduce(
+    (sum: number, order: Order) => sum + order.totalPrice,
+    0
+  );
+
+  return (
+    <div className="bg-gray-100 min-h-screen py-10 px-4">
+      <div className="max-w-5xl mx-auto">
+
+        {/* USER PROFILE */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 flex items-center gap-4">
+          <img
+            src={
+              currentUser?.photoURL ||
+              "https://randomuser.me/api/portraits/lego/1.jpg"
+            }
+            alt="User"
+            className="w-20 h-20 rounded-full object-cover"
+          />
+
+          <div>
+            <h1 className="text-2xl font-bold">
+              {currentUser?.displayName ||
+                currentUser?.email ||
+                "User"}
+            </h1>
+
+            <p className="text-gray-600">
+              {currentUser?.email}
+            </p>
+          </div>
+        </div>
+
+        {/* STATS */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-blue-100 p-5 rounded-lg shadow">
+            <p className="text-gray-600">Total Orders</p>
+            <h2 className="text-3xl font-bold">
+              {totalOrders}
+            </h2>
+          </div>
+
+          <div className="bg-green-100 p-5 rounded-lg shadow">
+            <p className="text-gray-600">Books Purchased</p>
+            <h2 className="text-3xl font-bold">
+              {totalBooks}
+            </h2>
+          </div>
+
+          <div className="bg-yellow-100 p-5 rounded-lg shadow">
+            <p className="text-gray-600">Total Spent</p>
+            <h2 className="text-3xl font-bold">
+              ${totalSpent.toFixed(2)}
+            </h2>
+          </div>
+        </div>
+
+        {/* ORDERS */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-semibold mb-6">
+            Recent Orders
+          </h2>
+
           {orders.length > 0 ? (
-            <ul className="space-y-4">
+            <div className="space-y-4">
               {orders.map((order: Order) => (
-                <li
+                <div
                   key={order._id}
-                  className="bg-gray-50 p-4 rounded-lg shadow-sm space-y-1"
+                  className="border rounded-lg p-4 hover:shadow-md transition"
                 >
-                  <p className="font-medium">Order ID: {order._id}</p>
-                  <p>Date: {new Date(order?.createdAt).toLocaleDateString()}</p>
-                  <p>Total: ${order.totalPrice}</p>
-                  {order.productIds.map((productId) => (
-                    <p key={productId} className="ml-1">
-                      {productId}
-                    </p>
-                  ))}
-                </li>
+                  <div className="flex flex-col md:flex-row md:justify-between">
+                    <div>
+                      <p className="font-semibold">
+                        Order ID:
+                      </p>
+                      <p className="text-gray-600">
+                        {order._id}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">
+                        Order Date:
+                      </p>
+                      <p className="text-gray-600">
+                        {new Date(
+                          order.createdAt
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <p className="font-semibold">
+                        Quantity
+                      </p>
+                      <p>{order.totalQuantity}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">
+                        Total Price
+                      </p>
+                      <p>${order.totalPrice}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-semibold">
+                        Status
+                      </p>
+                      <span className="text-green-600 font-semibold">
+                        Completed
+                      </span>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            <p className="text-gray-600">You have no recent orders.</p>
+            <p className="text-gray-600">
+              You have no recent orders.
+            </p>
           )}
         </div>
       </div>
