@@ -1,0 +1,80 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+		"name": "Bookstore API Tests",
+		"description": "Collection for testing Bookstore API with Newman",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Check Server Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/",
+					"host": [
+						"{{baseUrl}}"
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches status text\", function () {",
+							"    pm.response.to.have.body(\"Book Store Server is running!\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "Get All Books",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/books",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"books"
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response is an array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(Array.isArray(jsonData)).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		}
+	]
+}
