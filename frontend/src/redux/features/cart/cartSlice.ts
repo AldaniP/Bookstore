@@ -7,11 +7,15 @@ interface CartItem {
 }
 
 interface CartState {
-    cartItems: CartItem[];
+  cartItems: CartItem[];
+  discountPercent: number;
+  promoCode: string;
 }
 
 const initialState: CartState = {
-    cartItems: []
+  cartItems: [],
+  discountPercent: 0,
+  promoCode: "",
 };
 
 const cartSlice = createSlice({
@@ -71,6 +75,16 @@ const cartSlice = createSlice({
         },
         clearCart: (state) => {
             state.cartItems = [];
+            state.promoCode = "";
+            state.discountPercent = 0;
+        },
+        applyPromo: (state, action) => {
+            state.promoCode = action.payload.code;
+            state.discountPercent = action.payload.discount;
+        },
+        clearPromo: (state) => {
+            state.promoCode = "";
+            state.discountPercent = 0;
         },
     },
 });
@@ -81,5 +95,8 @@ export const {
     clearCart,
     incrementQuantity,
     decrementQuantity,
+    applyPromo,
+    clearPromo,
 } = cartSlice.actions;
+
 export default cartSlice.reducer;

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 
 import Swal from "sweetalert2";
 import { useCreateOrderMutation } from "../../redux/features/orders/ordersApi";
+import { clearCart } from "../../redux/features/cart/cartSlice";
 
 const CheckoutPage = () => {
   interface CartItem {
@@ -14,18 +15,35 @@ const CheckoutPage = () => {
     quantity: number;
   }
 
-  const cartItems = useSelector(
-    (state: { cart: { cartItems: CartItem[] } }) => state.cart.cartItems
+  const { cartItems, discountPercent, promoCode } = useSelector(
+    (state: {
+      cart: {
+        cartItems: CartItem[];
+        discountPercent: number;
+        promoCode: string;
+      };
+    }) => state.cart
   );
-  const totalPrice = cartItems
-    .reduce((acc: number, item: CartItem) => acc + item.newPrice * item.quantity, 0)
-    .toFixed(2);
+  const subtotal = cartItems.reduce(
+    (acc: number, item: CartItem) =>
+      acc + item.newPrice * item.quantity,
+    0
+  );
+
+  const discountAmount =
+    subtotal * (discountPercent / 100);
+
+  const totalPrice = (
+    subtotal - discountAmount
+  ).toFixed(2);
+
   const totalQuantity = cartItems.reduce((acc: number, item: CartItem) => acc + item.quantity, 0);
   const { currentUser } = useAuth();
   const { register, handleSubmit } = useForm<FormData>();
 
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [isChecked, setIsChecked] = useState(false);
   interface OrderData {
@@ -41,6 +59,9 @@ const CheckoutPage = () => {
     productIds: string[];
     totalQuantity: number;
     totalPrice: string;
+
+    promoCode?: string;
+    discountPercent?: number;
   }
 
   interface FormData {
@@ -67,18 +88,22 @@ const CheckoutPage = () => {
       productIds: cartItems.map((item: { _id: string }) => item?._id),
       totalQuantity,
       totalPrice: totalPrice,
+
+      promoCode,
+      discountPercent,
     };
 
     try {
       await createOrder(newOrder).unwrap();
+
+      dispatch(clearCart());
+
       Swal.fire({
         title: "Confirmed Order",
         text: "Your order placed successfully!",
-        icon: "warning",
-        showCancelButton: true,
+        icon: "success",
         confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, It's Okay!",
+        confirmButtonText: "OK",
       });
       navigate("/orders");
     } catch (error) {
@@ -101,6 +126,21 @@ const CheckoutPage = () => {
               <p className="text-gray-500 mb-2">
                 Total Items: {totalQuantity}
               </p>
+              {promoCode && (
+                <>
+                  <p className="text-green-600 mb-2">
+                    Promo Code: {promoCode}
+                  </p>
+
+                  <p className="text-green-600 mb-2">
+                    Discount: {discountPercent}%
+                  </p>
+
+                  <p className="text-green-600 mb-2">
+                    You Save: ${discountAmount.toFixed(2)}
+                  </p>
+                </>
+              )}
               <p className="text-gray-500 mb-6">
                 Products in cart: {cartItems.length > 0 ? cartItems.length : 0}
               </p>

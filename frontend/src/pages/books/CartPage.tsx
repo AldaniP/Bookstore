@@ -6,7 +6,9 @@ import {
   removeFromCart,
   incrementQuantity,
   decrementQuantity,
+  applyPromo,
 } from "../../redux/features/cart/cartSlice";
+import { useState } from "react";
 
 const CartPage = () => {
   const cartItems: CartItem[] = useSelector(
@@ -14,21 +16,41 @@ const CartPage = () => {
   );
   const dispatch = useDispatch();
 
+  const [couponCode, setCouponCode] = useState("");
+  const [couponMessage, setCouponMessage] = useState("");
+
+  const discountPercent = useSelector(
+    (state: {
+      cart: {
+        discountPercent: number;
+      };
+    }) => state.cart.discountPercent
+  );
+
   interface CartItem {
     _id: string;
     coverImage: string;
     title: string;
+    oldPrice?: number;
     newPrice: number;
     category: string;
     quantity: number;
   }
 
-  const totalPrice: string = cartItems
-    .reduce(
-      (acc: number, item: CartItem) => acc + item.newPrice * item.quantity,
-      0
-    )
-    .toFixed(2);
+
+  
+  const subtotal = cartItems.reduce(
+  (acc: number, item: CartItem) =>
+    acc + item.newPrice * item.quantity,
+  0
+);
+
+const discountAmount =
+  subtotal * (discountPercent / 100);
+
+const totalPrice = (
+        subtotal - discountAmount
+      ).toFixed(2);
 
   const handleRemoveFromCart = (product: CartItem): void => {
     dispatch(removeFromCart(product));
@@ -46,6 +68,41 @@ const CartPage = () => {
     dispatch(decrementQuantity(product));
   };
 
+  const applyCoupon = () => {
+    const code = couponCode.trim().toUpperCase();
+
+    if (code === "BOOK10") {
+      dispatch(
+        applyPromo({
+          code,
+          discount: 10,
+        })
+      );
+
+      setCouponMessage("Coupon applied! 10% discount.");
+    }
+    else if (code === "BOOK20") {
+      dispatch(
+        applyPromo({
+          code,
+          discount: 20,
+        })
+      );
+
+      setCouponMessage("Coupon applied! 20% discount.");
+    }
+    else {
+      dispatch(
+        applyPromo({
+          code: "",
+          discount: 0,
+        })
+      );
+
+      setCouponMessage("Invalid coupon code.");
+    }
+  };
+    
   return (
     <>
       <div className="flex mt-12 h-full flex-col overflow-hidden bg-white shadow-xl">
@@ -85,7 +142,17 @@ const CartPage = () => {
                             <h3>
                               <Link to="/">{product?.title}</Link>
                             </h3>
-                            <p className="sm:ml-4">${product?.newPrice}</p>
+                            <div className="text-right">
+                              {product.oldPrice && (
+                                <p className="text-sm text-gray-400 line-through">
+                                  ${product.oldPrice}
+                                </p>
+                              )}
+
+                              <p className="font-semibold">
+                                ${product.newPrice}
+                              </p>
+                            </div>
                           </div>
                           <p className="mt-1 text-sm text-gray-500 capitalize">
                             <strong>Category: </strong>
@@ -144,10 +211,51 @@ const CartPage = () => {
         </div>
 
         <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Promo Code
+            </label>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="Enter coupon code"
+                className="border rounded px-3 py-2 w-full"
+              />
+
+              <button
+                onClick={applyCoupon}
+                className="bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Apply
+              </button>
+            </div>
+
+            {couponMessage && (
+              <p className="mt-2 text-sm text-blue-600">
+                {couponMessage}
+              </p>
+            )}
+          </div>
           <div className="flex justify-between text-base font-medium text-gray-900">
             <p>Subtotal</p>
-            <p>${totalPrice ? totalPrice : 0}</p>
+            <p>${subtotal.toFixed(2)}</p>
           </div>
+
+          {discountPercent > 0 && (
+            <div className="flex justify-between text-green-600 mt-2">
+              <p>Discount ({discountPercent}%)</p>
+              <p>- ${discountAmount.toFixed(2)}</p>
+            </div>
+          )}
+
+          <div className="flex justify-between text-lg font-bold mt-3">
+            <p>Total</p>
+            <p>${totalPrice}</p>
+          </div>
+
           <p className="mt-0.5 text-sm text-gray-500">
             Shipping and taxes calculated at checkout.
           </p>
