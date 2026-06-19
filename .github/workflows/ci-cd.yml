@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - staging
   pull_request:
     branches:
       - main
+      - staging
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # GCP Project ID
@@ -122,7 +124,7 @@ jobs:
     # Pipeline Blocker: Deployment depends on the success of the 'lint-and-test' job.
     # If linting, security audit, or unit tests fail, this job is blocked and deployment is cancelled.
     needs: lint-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -131,6 +133,28 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Set Environment Variables based on Branch
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "ENV_NAME=production" >> $GITHUB_ENV
+            echo "BACKEND_SERVICE=bookstore-backend" >> $GITHUB_ENV
+            echo "FRONTEND_SERVICE=bookstore-frontend" >> $GITHUB_ENV
+            echo "DB_SECRET=DB_URL:latest" >> $GITHUB_ENV
+            echo "JWT_SECRET=JWT_SECRET_KEY:latest" >> $GITHUB_ENV
+            echo "VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}" >> $GITHUB_ENV
+          else
+            echo "ENV_NAME=staging" >> $GITHUB_ENV
+            echo "BACKEND_SERVICE=bookstore-backend-staging" >> $GITHUB_ENV
+            echo "FRONTEND_SERVICE=bookstore-frontend-staging" >> $GITHUB_ENV
+            echo "DB_SECRET=DB_URL_STAGING:latest" >> $GITHUB_ENV
+            echo "JWT_SECRET=JWT_SECRET_KEY_STAGING:latest" >> $GITHUB_ENV
+            if [ -n "${{ secrets.VITE_BACKEND_URL_STAGING }}" ]; then
+              echo "VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL_STAGING }}" >> $GITHUB_ENV
+            else
+              echo "VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}" >> $GITHUB_ENV
+            fi
+          fi
 
       # --- Google Cloud Auth ---
       # Option 1: Workload Identity Federation (RECOMMENDED)
@@ -173,13 +197,13 @@ jobs:
             ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.FRONTEND_IMAGE }}:latest
             ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
           build-args: |
-            VITE_API_KEY=${{ secrets.VITE_API_KEY }}
-            VITE_Auth_Domain=${{ secrets.VITE_Auth_Domain }}
-            VITE_PROJECT_ID=${{ secrets.VITE_PROJECT_ID }}
-            VITE_STORAGE_BUCKET=${{ secrets.VITE_STORAGE_BUCKET }}
-            VITE_MESSAGING_SENDERID=${{ secrets.VITE_MESSAGING_SENDERID }}
-            VITE_APPID=${{ secrets.VITE_APPID }}
-            VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}
+            VITE_API_KEY=${{ secrets.VITE_API_KEY_STAGING || secrets.VITE_API_KEY }}
+            VITE_Auth_Domain=${{ secrets.VITE_Auth_Domain_STAGING || secrets.VITE_Auth_Domain }}
+            VITE_PROJECT_ID=${{ secrets.VITE_PROJECT_ID_STAGING || secrets.VITE_PROJECT_ID }}
+            VITE_STORAGE_BUCKET=${{ secrets.VITE_STORAGE_BUCKET_STAGING || secrets.VITE_STORAGE_BUCKET }}
+            VITE_MESSAGING_SENDERID=${{ secrets.VITE_MESSAGING_SENDERID_STAGING || secrets.VITE_MESSAGING_SENDERID }}
+            VITE_APPID=${{ secrets.VITE_APPID_STAGING || secrets.VITE_APPID }}
+            VITE_BACKEND_URL=${{ env.VITE_BACKEND_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -199,19 +223,19 @@ jobs:
       - name: Deploy Backend to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: bookstore-backend
+          service: ${{ env.BACKEND_SERVICE }}
           region: ${{ secrets.GAR_LOCATION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
           flags: '--allow-unauthenticated --port=5000'
           secrets: |
-            DB_URL=DB_URL:latest
-            JWT_SECRET_KEY=JWT_SECRET_KEY:latest
+            DB_URL=${{ env.DB_SECRET }}
+            JWT_SECRET_KEY=${{ env.JWT_SECRET }}
 
       # --- Deploy Frontend to Cloud Run ---
       - name: Deploy Frontend to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: bookstore-frontend
+          service: ${{ env.FRONTEND_SERVICE }}
           region: ${{ secrets.GAR_LOCATION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
           flags: '--allow-unauthenticated --port=80'
