@@ -286,3 +286,5 @@ const totalPrice = (
 };
 
 export default CartPage;
+
+//cartpage
